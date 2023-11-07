@@ -1,5 +1,5 @@
-# Práctica_4
-# Despliegue de una aplicación web LAMP en Ubuntu server.
+# Práctica_4 Sitio web con certificado autofirmado.
+### Despliegue de una aplicación web LAMP en Ubuntu server.
 ### Pero,¿De que consta una pila LAMP?
 Muy simple, con esto describimos un sistema de infraestructura de internet, lo que estamos buscando es desplegar una serie de aplicaciones en la web, desde un unico sistema operativo, esto quiere decir que, buscamos desplegar aplicaciones en la web de forma cómoda y rápida ejecutando un único script, el cual hay que configurar previamente.
 
@@ -137,8 +137,8 @@ chown -R www-data:www-data /var/www/html
 En el navegador --> http://nuestraipservidor/index.php, y debería salirnos.
 ```
 
-# Creamos un certificado y una clave privada.
-## Creación de un documento autofirmado.
+# 1 Creamos un certificado y una clave privada.
+## 1.1 Creación de un documento autofirmado.
 openssl req \
   -x509 \
   -nodes \
@@ -154,15 +154,15 @@ req: crea solicitudes de certificado en formato PKCS#10. También puede utilizar
 
 -x509: Indica que queremos crear un certificado autofirmado en lugar de una solicitud de certificado, que se enviaría a una autoridad de certificación.
 
--nodes: Indica que la clave privada del certificado no estará protegida por contraseña y estará sin encriptar. Esto permite a las aplicaciones usar el certificado sin tener que introducir una contraseña cada vez que se utilice.
+-nodes: clave privada del certificado no estará protegida por contraseña y estará sin encriptar. Esto permite a las aplicaciones usar el certificado sin introducir contraseña.
 
--days 365: Este parámetro indica la validez del certificado con una validez de 365 días.
+-days 365: Muestra la validez del certificado con una validez de 365 días.
 
--newkey rsa:2048: Este parámetro indica que queremos generar una nueva clave privada RSA de 2048 bits junto con el certificado. La longitud de clave de 2048 bits es un estándar razonable para la seguridad en la actualidad.
+-newkey rsa:2048: indica que nosotros queremos generar una nueva clave privada RSA de 2048 bits junto con el certificado. La longitud de clave de 2048 bits es un estándar razonable para la seguridad en la actualidad.
 
 -keyout /etc/ssl/private/apache-selfsigned.key: Indica la ubicación y el nombre del archivo donde se guardará la clave privada generada. En este caso, hemos seleccionado que se guarde en la ruta /etc/ssl/private/apache-selfsigned.key.
 
--out /etc/ssl/certs/apache-selfsigned.crt: Indica la ubicación y el nombre del archivo donde se guardará el certificado. En este caso, hemos seleccionado que se guarde en la ruta /etc/ssl/certs/apache-selfsigned.crt.
+-out /etc/ssl/certs/apache-selfsigned.crt: Indica la ruta del certificado.
 ```
 ### Debido a que hay una serie de valores que se tienen que incorporar a mano y buscamos que el script se genere automaticamente, por ello en el archivo .env hay estas variables.
 ```
@@ -176,10 +176,10 @@ OPENSSL_EMAIL="admin@iescelia.org"
 ```
 ### Estos datos se incorporan automaticamente con estas variables.
 
-# Copiamos el archivo de configuracion de apache para https:
+# 2 Copiamos el archivo de configuracion de apache para https:
   cp ../conf/default-ssl.conf /etc/apache2/sites-available/
 
-# Habilitamos el host virtual para https
+# 3 Habilitamos el host virtual para https
 ```
 a2ensite default-ssl.conf
 ```
@@ -197,19 +197,19 @@ a2ensite default-ssl.conf
 </VirtualHost>
 ```
 
-# Habilitamos el modulo ssl
+# 4 Habilitamos el modulo ssl
 ```
   a2enmod ssl
 ```
 #### Tras eso se habilita la modalidad ssl, .
 
-# Reiniciamos el servicio de apache2
+# 5 Reiniciamos el servicio de apache2
 ```
   systemctl restart apache2
 ```
 ### Este paso es importante ya que actualiza los cambios.
 
-# Configuramos que las peticiones a HTTP se redirigan a https
+# 6 Configuramos que las peticiones a HTTP se redirigan a https
 # Copiamos el archivo de configuración de VirtualHost para HTTP
 ```
   cp ../conf/000-default.conf /etc/apache2/sites-available
@@ -230,26 +230,64 @@ a2ensite default-ssl.conf
 
 ### Dicha variación hace que rediriga las busquedas del puerto 80 al 443, para que muestre el contenido securizado en vez del inseguro.
 
-# Modificamos el campo del archivo principal default-ssl.conf
+# 6 Modificamos el campo del archivo principal default-ssl.conf
 ```
   sed -i "s/PUT_YOUR_DOMAIN_HERE/$OPENSSL_COMMON_NAME" /etc/apache2/sites-available/default-ssl.conf
 ```
 
 ### Donde el -i se encarga de editar el archivo en ese momento, cuando se ejecute esta parte, el nombre de dominio lo va a cambiar por el que se encuentra designado en la variable .env es decir tendrá este valor OPENSSL_COMMON_NAME="practica-https.local".
 
-# Habilitamos el modulo rewrite
+# 7 Habilitamos el modulo rewrite
 ```
   a2enmod rewrite
 ```
 ### Habilitamos el modulo que va a redirigir las peticiones de http a https.
 
-# Reiniciamos el servicio de apache
+# 8 Reiniciamos el servicio de apache
 ```
   systemctl restart apache2
 ```
 ### Reiniciamos para que se acepte el nuevo modulo que se ha habilitado.
 
-# Modificamos el campo del archivo principal default-ssl.conf
+# 9 Modificamos el campo del archivo principal default-ssl.conf
 ```
   sed -i "s/PUT_YOUR_DOMAIN_HERE/$OPENSSL_COMMON_NAME/" /etc/apache2/sites-available/default-ssl.conf
 ```
+#### Modificamos el contenido del archivo por defecto de apache securizado con el comando sed modificando una sustituyendo una palabra por otra.
+
+# EXTRA.- Configuración para acceder con el nombre de dominio en windows.
+
+## Modificación del archivo windows para acceder al sitio web a traves del dominio.
+
+### Modificamos el siguiente archivo en la ruta c:\windows\system32\drivers\etc\host
+
+```
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+54.204.191.184	practica-https.local
+```
+
+#### Donde ponemos la ip publica y el nombre del dominio el cual, da acceso al servidor poniendo el dominio y redirigiendo hacia el sitio web.
+
+![Alt text](Captura.png)
+
+### Y esto comprueba que funciona como podemos comprobar arriba, en el navegador.
