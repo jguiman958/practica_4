@@ -47,6 +47,3 @@ openssl req \
 
   # Reiniciamos el servicio de apache
   systemctl restart apache2
-  
-  # Modificamos el campo del archivo principal default-ssl.conf
-  sed -i "s/PUT_YOUR_DOMAIN_HERE/$OPENSSL_COMMON_NAME/" /etc/apache2/sites-available/default-ssl.conf
