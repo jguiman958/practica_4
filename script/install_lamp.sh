@@ -2,7 +2,7 @@
 
 # Muestra todos los comandos que se han ejeutado.
 
-set -x
+set -ex
 
 # Actualización de repositorios
 apt update
