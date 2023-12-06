@@ -2,7 +2,7 @@
 
 # Muestra todos los comandos que se han ejeutado.
 
-set -x
+set -ex
 
 # Actualización de repositorios
  apt update
@@ -40,7 +40,7 @@ openssl req \
   cp ../conf/000-default.conf /etc/apache2/sites-available
    
   # Modificamos el campo del archivo principal default-ssl.conf
-  sed -i "s/PUT_YOUR_DOMAIN_HERE/$OPENSSL_COMMON_NAME" /etc/apache2/sites-available/default-ssl.conf
+  sed -i "s#PUT_YOUR_DOMAIN_HERE#$OPENSSL_COMMON_NAME#" /etc/apache2/sites-available/default-ssl.conf
 
   # Habilitamos el modulo rewrite
   a2enmod rewrite

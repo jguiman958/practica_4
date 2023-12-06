@@ -12,7 +12,7 @@ apt update
 
 # Instalamos el servidor Web apache
 
-install apache2 -y
+apt install apache2 -y
 
 #instalar mysql server
 apt install mysql-server -y
@@ -31,5 +31,3 @@ cp ../php/index.php /var/www/html
 
 # Modificamos el propietario y el grupo del directo /var/www/html
 chown -R www-data:www-data /var/www/html
-
-
